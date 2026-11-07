@@ -1,0 +1,194 @@
+﻿* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  background: #ffffff;
+  overflow: hidden;
+  font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+}
+
+/* ---------- 画爱心阶段的背景：淡粉渐变 + 柔光 + 小圆点底纹 + 上浮的小爱心 ---------- */
+#bgLight {
+  position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 46%, #ffffff 0%, #faf8ff 40%, #efeafa 75%, #e3dcf5 100%);   /* 淡紫白：和粉色文字形成冷暖对比，字更清楚 */
+  opacity: 0; transition: opacity 1s ease;
+}
+#bgLight.on { opacity: 1; }
+#bgLight.off { display: none; }
+#bgLight::before {                      /* 极淡的小圆点底纹，让大面积的白不显得空 */
+  content: ""; position: absolute; inset: 0;
+  background-image: radial-gradient(rgba(150, 130, 210, .14) 1.6px, transparent 2.2px);
+  background-size: 30px 30px;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 46%, transparent 25%, #000 85%);
+          mask-image: radial-gradient(ellipse at 50% 46%, transparent 25%, #000 85%);
+}
+#glow {                                 /* 爱心背后的粉色光晕，随心跳一起一胀一缩 */
+  position: absolute; left: 50%; top: 46%;
+  width: min(86vmin, 760px); height: min(86vmin, 760px);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, .95) 0%, rgba(255, 255, 255, .6) 40%, rgba(255, 255, 255, 0) 70%);   /* 爱心后面一团白光，托出文字 */
+  transform: translate(-50%, -50%);
+  will-change: transform;
+}
+#bgLight .fl {                          /* 缓缓上浮的小爱心 */
+  position: absolute; left: var(--x); bottom: -60px;
+  width: var(--s); height: var(--s);
+  color: rgba(160, 140, 225, .30);
+  background: currentColor;             /* 用 SVG 遮罩画爱心：不依赖字体，iOS 上不会变成红色 emoji */
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E") center / contain no-repeat;
+  animation: rise var(--d) linear var(--dl) infinite;
+  will-change: transform;
+}
+#bgLight .fl:nth-of-type(odd) { color: rgba(255, 185, 120, .38); }
+#bgLight .sp {                          /* 闪烁的小星光 */
+  position: absolute; left: var(--x); top: var(--y);
+  font-style: normal; font-size: var(--s); line-height: 1;
+  color: rgba(255, 190, 90, .75);
+  animation: twinkle 3.2s ease-in-out var(--dl) infinite;
+}
+@keyframes rise {
+  0%   { transform: translate3d(0, 0, 0) rotate(-8deg); opacity: 0; }
+  8%   { opacity: 1; }
+  50%  { transform: translate3d(var(--sw), -60vh, 0) rotate(8deg); }
+  92%  { opacity: 1; }
+  100% { transform: translate3d(0, -118vh, 0) rotate(-8deg); opacity: 0; }
+}
+@keyframes twinkle {
+  0%, 100% { opacity: .15; transform: scale(.7) rotate(0deg); }
+  50%      { opacity: 1;   transform: scale(1.15) rotate(20deg); }
+}
+
+/* 雾光背景层：文字墙阶段淡入（白 → 暗紫红 + 朦胧的彩色光雾，和参考图一致） */
+#bgDark {
+  position: fixed; inset: 0; z-index: 0; overflow: hidden;
+  background: linear-gradient(165deg, #2d1c2e 0%, #1f1424 45%, #2a1a30 100%);
+  opacity: 0;
+  transition: opacity 2.2s ease;
+  pointer-events: none;
+}
+#bgDark.on { opacity: 1; }
+
+/* 三团缓慢漂移的柔光，只用 transform 动画（走 GPU 合成，不卡） */
+#bgDark i {
+  position: absolute; border-radius: 50%;
+  width: 90vmax; height: 90vmax;
+  will-change: transform;
+}
+#bgDark i:nth-child(1) {
+  left: -25vmax; top: -30vmax;
+  background: radial-gradient(circle, rgba(255, 110, 170, .34) 0%, rgba(255, 110, 170, 0) 62%);
+  animation: fog1 17s ease-in-out infinite alternate;
+}
+#bgDark i:nth-child(2) {
+  right: -30vmax; bottom: -35vmax;
+  background: radial-gradient(circle, rgba(170, 110, 255, .30) 0%, rgba(170, 110, 255, 0) 62%);
+  animation: fog2 21s ease-in-out infinite alternate;
+}
+#bgDark i:nth-child(3) {
+  left: 20vw; top: 15vh;
+  background: radial-gradient(circle, rgba(255, 170, 200, .20) 0%, rgba(255, 170, 200, 0) 60%);
+  animation: fog3 26s ease-in-out infinite alternate;
+}
+@keyframes fog1 { to { transform: translate(18vw, 14vh) scale(1.15); } }
+@keyframes fog2 { to { transform: translate(-16vw, -12vh) scale(1.1); } }
+@keyframes fog3 { to { transform: translate(-14vw, 10vh) scale(0.9); } }
+
+canvas#stage {
+  position: fixed; inset: 0; z-index: 1;
+  width: 100%; height: 100%;
+  display: block;
+  background: transparent;   /* 保持透明，这样弹窗外面看到的是白底而不是黑色 */
+  touch-action: none;
+  cursor: default;
+}
+canvas#stage.grab { cursor: grab; }
+canvas#stage.grabbing { cursor: grabbing; }
+
+/* ---------- 炸开瞬间：一团柔和的光（只用 transform / opacity，走 GPU） ---------- */
+#flash {
+  position: fixed; left: 50%; top: 50%; z-index: 3; pointer-events: none;
+  width: 50vmax; height: 50vmax; margin: -25vmax 0 0 -25vmax;
+  border-radius: 50%; opacity: 0; will-change: transform, opacity;
+  background: radial-gradient(circle, rgba(255, 255, 255, .85) 0%, rgba(255, 170, 215, .45) 22%, rgba(190, 100, 255, .16) 45%, rgba(190, 100, 255, 0) 68%);
+  mix-blend-mode: screen;
+}
+#flash.go { animation: flash 1.2s ease-out forwards; }
+@keyframes flash { 0% { opacity: 0; transform: scale(.1); } 15% { opacity: 1; transform: scale(.5); } 100% { opacity: 0; transform: scale(1.2); } }
+/* ---------- 神笔 ---------- */
+#pen {
+  position: fixed; left: 0; top: 0; width: 0; height: 0; z-index: 4;
+  transform-origin: 0 0;           /* 以笔尖为旋转中心 */
+  opacity: 0; pointer-events: none;
+  will-change: transform, opacity;
+}
+#pen svg {
+  position: absolute; left: -51px; top: -159px;  /* 让笔尖（svg 坐标约 310,956 → 170px 下约 51,159）正好落在元素原点 */
+  width: 170px; height: 170px;
+  filter: drop-shadow(0 4px 6px rgba(120, 30, 80, .35));
+  overflow: visible;
+}
+.pen-ink { filter: drop-shadow(0 0 4px #ff4d88); }
+
+/* ---------- 开场弹窗 ---------- */
+#mask {
+  position: fixed; inset: 0; z-index: 10;
+  background: rgba(40, 20, 50, .35);   /* 白底上呈现柔和的灰色 */
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity .5s ease;
+}
+#mask.hide { opacity: 0; pointer-events: none; }
+#mask.gone { display: none; }
+
+#dialog {
+  width: min(86vw, 360px);
+  background: #fff;
+  border-radius: 20px;
+  padding: 30px 24px 22px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(120, 40, 90, .35);
+  animation: pop .5s cubic-bezier(.2, 1.4, .4, 1) both;
+}
+#dialog.shake { animation: shake .45s ease; }
+#dialog .icon { font-size: 54px; line-height: 1; animation: float 2.2s ease-in-out infinite; }
+#dialog h2 { margin: 14px 0 6px; font-size: 20px; color: #333; font-weight: 700; }
+#dialog p { font-size: 14px; color: #999; margin-bottom: 22px; min-height: 20px; }
+
+.btns { display: flex; gap: 12px; }
+.btns button {
+  flex: 1; padding: 12px 0; font-size: 16px; border: 0; border-radius: 999px;
+  cursor: pointer; font-family: inherit; transition: transform .15s, box-shadow .15s;
+}
+.btns button:active { transform: scale(.95); }
+#cancel { background: #f3f3f5; color: #888; }
+#ok {
+  background: linear-gradient(135deg, #ff7aa8, #ff4d88);
+  color: #fff; font-weight: 700;
+  box-shadow: 0 6px 16px rgba(255, 77, 136, .4);
+}
+#ok:hover { box-shadow: 0 8px 22px rgba(255, 77, 136, .55); }
+
+@keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); } 20% { transform: translateX(-10px); }
+  40% { transform: translateX(10px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(6px); }
+}
+
+
+/* ---------- 右下角“我要制作”侧边按钮（始终显示在最上层） ---------- */
+#make {
+  position: fixed; right: 0; bottom: calc(14vh + env(safe-area-inset-bottom, 0px)); z-index: 30;
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; padding: 12px 0;
+  writing-mode: vertical-rl; text-orientation: upright;
+  letter-spacing: 3px; font-size: 13px; line-height: 1; font-weight: 600;
+  color: #fff; text-decoration: none;
+  background: #78b6f2;
+  border-radius: 10px 0 0 10px;
+  box-shadow: 0 4px 14px rgba(70, 140, 220, .35);
+  -webkit-tap-highlight-color: transparent;
+  transition: width .15s ease, background .15s ease;
+}
+#make:hover, #make:active { background: #5da6ec; width: 34px; }
