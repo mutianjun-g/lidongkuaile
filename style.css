@@ -1,4 +1,4 @@
-﻿* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 html, body {
   width: 100%; height: 100%;
@@ -175,20 +175,3 @@ canvas#stage.grabbing { cursor: grabbing; }
   0%, 100% { transform: translateX(0); } 20% { transform: translateX(-10px); }
   40% { transform: translateX(10px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(6px); }
 }
-
-
-/* ---------- 右下角“我要制作”侧边按钮（始终显示在最上层） ---------- */
-#make {
-  position: fixed; right: 0; bottom: calc(14vh + env(safe-area-inset-bottom, 0px)); z-index: 30;
-  display: flex; align-items: center; justify-content: center;
-  width: 30px; padding: 12px 0;
-  writing-mode: vertical-rl; text-orientation: upright;
-  letter-spacing: 3px; font-size: 13px; line-height: 1; font-weight: 600;
-  color: #fff; text-decoration: none;
-  background: #78b6f2;
-  border-radius: 10px 0 0 10px;
-  box-shadow: 0 4px 14px rgba(70, 140, 220, .35);
-  -webkit-tap-highlight-color: transparent;
-  transition: width .15s ease, background .15s ease;
-}
-#make:hover, #make:active { background: #5da6ec; width: 34px; }
